@@ -12,24 +12,24 @@ dotenv.config({ path: './config.env' });
 
 const app = require('./app');
 
+// Atlas Database
 const DB = process.env.DATABASE.replace(
     '<PASSWORD>',
     process.env.DATABASE_PASSWORD
 );
 
-// Local Database
-//     .connect(process.env.DATABASE_LOCAL)
-//     .then((connection) => {
-//         console.log(connection.connections);
-//         console.log('DB connection successful');
-//     })
-//     .catch((err) => console.log(err));
-
-// Atlas Database
-
 mongoose.connect(DB).then(() => {
     console.log('Database connection successful');
 });
+
+// Local Database
+// mongoose
+//     .connect(process.env.DATABASE_LOCAL)
+//     .then((connection) => {
+//         // console.log(connection.connections);
+//         console.log('DB connection successful');
+//     })
+//     .catch((err) => console.log(err));
 
 const port = process.env.PORT || 3000;
 const server = app.listen(port, () => {

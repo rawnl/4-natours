@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
 const validator = require('validator');
+// const User = require('./userModel'); // For embedding
 
 const tourSchema = new mongoose.Schema(
     {
@@ -25,10 +26,7 @@ const tourSchema = new mongoose.Schema(
         },
         maxGroupSize: {
             type: Number,
-            required: [
-                true,
-                'A tour must have a groupe size',
-            ],
+            required: [true, 'A tour must have a groupe size'],
         },
         price: {
             type: Number,
@@ -36,14 +34,10 @@ const tourSchema = new mongoose.Schema(
         },
         difficulty: {
             type: String,
-            required: [
-                true,
-                'A tour must have a difficulty',
-            ],
+            required: [true, 'A tour must have a difficulty'],
             enum: {
                 values: ['easy', 'medium', 'difficult'],
-                message:
-                    'Difficulty is either: easy, medium, difficult',
+                message: 'Difficulty is either: easy, medium, difficult',
             },
         },
         ratingAverage: {
@@ -63,17 +57,13 @@ const tourSchema = new mongoose.Schema(
                     // this only points to current doc on NEW Document Creation
                     return val < this.price;
                 },
-                message:
-                    'Discount price ({VALUE}) should below regular price ',
+                message: 'Discount price ({VALUE}) should below regular price ',
             },
         },
         summary: {
             type: String,
             trim: true,
-            required: [
-                true,
-                'A tour must have a description',
-            ],
+            required: [true, 'A tour must have a description'],
         },
         description: {
             type: String,
@@ -81,10 +71,7 @@ const tourSchema = new mongoose.Schema(
         },
         imageCover: {
             type: String,
-            required: [
-                true,
-                'A tour must have a cover image',
-            ],
+            required: [true, 'A tour must have a cover image'],
         },
         images: [String],
         createdAt: {
@@ -97,6 +84,37 @@ const tourSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        startLocation: {
+            // GeoJSON
+            type: {
+                type: String,
+                default: 'Point',
+                enum: ['Point'],
+            },
+            coordinates: [Number],
+            address: String,
+            description: String,
+        },
+        locations: [
+            {
+                type: {
+                    type: String,
+                    default: 'Point',
+                    enum: ['Point'],
+                },
+                coordinates: [Number],
+                address: String,
+                description: String,
+                day: Number,
+            },
+        ],
+        // guides: Array, // For embedding Data
+        guides: [
+            {
+                type: mongoose.Schema.ObjectId,
+                ref: 'User',
+            },
+        ],
     },
     {
         toJSON: { virtuals: true },
@@ -108,11 +126,29 @@ tourSchema.virtual('durationWeeks').get(function () {
     return this.duration / 7;
 });
 
+// Virtual populate
+tourSchema.virtual('reviews', {
+    ref: 'Review',
+    foreignField: 'tour',
+    localField: '_id',
+});
+
 // DOCUMENT MIDDLEWARE: runs before .save() & .create()
 tourSchema.pre('save', function (next) {
     this.slug = slugify(this.name, { lower: true });
     next();
 });
+
+// Embeding data => works only for creating a new tour
+// tourSchema.pre('save', async function (next) {
+//     const guidesPromises = this.guides.map(
+//         async (id) => await User.findById(id)
+//     );
+//     this.guides = await Promise.all(guidesPromises);
+//     next();
+// });
+
+//
 
 // tourSchema.pre('save', function (next) {
 //     console.log('Saving document..');
@@ -134,10 +170,17 @@ tourSchema.pre(/^find/, function (next) {
     next();
 });
 
+tourSchema.pre(/^find/, function (next) {
+    this.populate({
+        path: 'guides',
+        select: '-__v -passwordChangedAt',
+    });
+
+    next();
+});
+
 tourSchema.post(/^find/, function (docs, next) {
-    console.log(
-        `The query took ${Date.now() - this.start} ms`
-    );
+    console.log(`The query took ${Date.now() - this.start} ms`);
     next();
 });
 

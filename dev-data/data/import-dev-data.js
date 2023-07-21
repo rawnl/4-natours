@@ -5,21 +5,24 @@ const Tour = require('./../../models/tourModel');
 
 dotenv.config({ path: './config.env' });
 
+// Atlas Database
 const DB = process.env.DATABASE.replace(
     '<PASSWORD>',
     process.env.DATABASE_PASSWORD
 );
 
-mongoose
-    .connect(DB)
-    .then(console.log('Database connection successful'));
+mongoose.connect(DB).then(console.log('Database connection successful'));
 
-const tours = JSON.parse(
-    fs.readFileSync(
-        `${__dirname}/tours-simple.json`,
-        'utf-8'
-    )
-);
+// Local Database
+// mongoose
+//     .connect(process.env.DATABASE_LOCAL)
+//     .then((connection) => {
+//         // console.log(connection.connections);
+//         console.log('DB connection successful');
+//     })
+//     .catch((err) => console.log(err));
+
+const tours = JSON.parse(fs.readFileSync(`${__dirname}/tours.json`, 'utf-8'));
 
 const importData = async () => {
     try {
