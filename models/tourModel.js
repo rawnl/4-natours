@@ -185,17 +185,16 @@ tourSchema.pre(/^find/, function (next) {
     next();
 });
 
-tourSchema.post(/^find/, function (docs, next) {
-    console.log(`The query took ${Date.now() - this.start} ms`);
-    next();
-});
+// tourSchema.post(/^find/, function (docs, next) {
+//     console.log(`The query took ${Date.now() - this.start} ms`);
+//     next();
+// });
 
 // AGGREGATION MIDDLEWARE
 tourSchema.pre('aggregate', function (next) {
     this.pipeline().push({
         $match: { secretTour: { $ne: true } },
     });
-    console.log(this.pipeline());
     next();
 });
 

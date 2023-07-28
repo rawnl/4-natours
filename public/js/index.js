@@ -21,7 +21,6 @@ if (mapLibre) {
 }
 
 if (loginFrom) {
-    console.log(email, password);
     loginFrom.addEventListener('submit', (e) => {
         e.preventDefault();
         const email = document.getElementById('email').value;
@@ -31,7 +30,6 @@ if (loginFrom) {
 }
 
 if (logoutBtn) {
-    console.log('exists');
     logoutBtn.addEventListener('click', logout);
 }
 
